@@ -1,0 +1,6 @@
+direction: down
+richchar: Richchar CLI
+external: External Runtime { piper: Piper; w2l: Wav2Lip GAN; gfpgan: GFPGAN; ffmpeg: FFmpeg }
+qa: Quality { pytest: Pytest; ruff: Ruff; shellcheck: ShellCheck; trivy: Trivy; codeql: CodeQL }
+richchar -> external
+qa -> richchar

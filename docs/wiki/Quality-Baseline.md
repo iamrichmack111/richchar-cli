@@ -1,14 +1,23 @@
-# Quality baseline
+# Quality Baseline
 
-The validated photorealistic pipeline is intentionally conservative:
+Validated GFPGAN configuration:
 
-1. Wav2Lip GAN checkpoint with `--nosmooth`.
-2. Extract lossless PNG frames.
-3. GFPGAN v1.4 with `upscale=1`, `arch="clean"`, `channel_multiplier=2`, no background upsampler.
-4. `enhance(... has_aligned=False, only_center_face=True, paste_back=True, weight=0.65)`.
-5. Encode H.264 at CRF 14 using the slow preset.
+```text
+upscale=1
+arch=clean
+channel_multiplier=2
+bg_upsampler=None
+has_aligned=False
+only_center_face=True
+paste_back=True
+weight=0.65
+```
 
-Do not replace the full-frame restoration with ROI-only restoration, Real-ESRGAN, or generic sharpening without a visual regression comparison. The current pipeline is intended for photorealistic human portraits; illustrated/cartoon faces are not a supported quality target.
+Final encode:
 
-
-![Quality contract](../diagrams/quality.svg)
+```text
+libx264
+CRF 14
+preset slow
+yuv420p
+```

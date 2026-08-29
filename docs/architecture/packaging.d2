@@ -1,0 +1,6 @@
+direction: right
+source: Source Tree
+qa: QA
+build: build-package.sh
+artifacts: Artifacts { zip: ZIP; tar: TAR.GZ; sum: SHA256SUMS }
+source -> qa -> build -> artifacts

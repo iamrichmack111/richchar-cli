@@ -3,208 +3,469 @@
 [![CI](https://github.com/iamrichmack111/richchar-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/iamrichmack111/richchar-cli/actions/workflows/ci.yml)
 [![Security](https://github.com/iamrichmack111/richchar-cli/actions/workflows/security.yml/badge.svg)](https://github.com/iamrichmack111/richchar-cli/actions/workflows/security.yml)
 [![CodeQL](https://github.com/iamrichmack111/richchar-cli/actions/workflows/codeql.yml/badge.svg)](https://github.com/iamrichmack111/richchar-cli/actions/workflows/codeql.yml)
-[![Release](https://img.shields.io/github/v/release/iamrichmack111/richchar-cli?display_name=tag)](https://github.com/iamrichmack111/richchar-cli/releases)
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
-![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon-000000)
-![Ubuntu](https://img.shields.io/badge/Ubuntu-supported-E95420)
-![D2](https://img.shields.io/badge/Architecture-D2-5C6AC4)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![macOS](https://img.shields.io/badge/macOS-supported-black)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-supported-orange)
 
-**Richchar CLI** is a local-first talking-portrait generator that orchestrates Piper TTS, Wav2Lip GAN, GFPGAN v1.4 and FFmpeg into a reproducible photorealistic portrait pipeline.
+**Richchar CLI** is a local-first talking-portrait generator that orchestrates Piper TTS, Wav2Lip GAN, GFPGAN v1.4, and FFmpeg.
 
-> **Documentation rule:** every major README section has its own D2 source diagram under `docs/diagrams/` and a rendered SVG directly in the section.
+The validated v1.1.0 quality target is **photorealistic human portraits**.
 
-## Project Overview
+---
 
-![Project overview](docs/diagrams/overview.svg)
+## 1. Overview
 
-[D2 source](docs/diagrams/overview.d2)
+![Richchar overview](docs/architecture/overview.svg)
 
-Richchar accepts a portrait, narration and a Piper voice model, then produces a restored H.264 talking-portrait MP4. It is an orchestrator rather than a full nonlinear video editor.
-
-## Features
-
-![Feature map](docs/diagrams/features.svg)
-
-[D2 source](docs/diagrams/features.d2)
-
-- Local-first generation with no required cloud inference.
-- Piper text-to-speech from inline text or script files.
-- Wav2Lip GAN lip synchronization with the validated `--nosmooth` path.
-- Full-frame lossless PNG extraction and exact GFPGAN v1.4 restoration.
-- H.264 final encode using CRF 14 and the slow preset.
-- Preview, resume, manual face box and doctor diagnostics.
-- CI, Trivy security scanning and CodeQL Python analysis.
-
-## Quick Start
-
-![Quick start](docs/diagrams/quick-start.svg)
-
-[D2 source](docs/diagrams/quick-start.d2)
-
-```bash
-./richchar \
-  --image portrait.png \
-  --text "Welcome to Richmack OS." \
-  --voice-model en_US-ryan-high.onnx \
-  --output final.mp4
-```
-
-For a text file, replace `--text` with `--script-file narration.txt`.
-
-## Architecture
-
-![Runtime architecture](docs/diagrams/architecture.svg)
-
-[D2 source](docs/diagrams/architecture.d2)
-
-The runtime is intentionally staged: Piper generates WAV audio, Wav2Lip GAN creates synchronized motion, FFmpeg extracts every frame losslessly, GFPGAN restores the complete frames, and FFmpeg encodes the final MP4.
-
-## Quality Baseline
-
-![Quality contract](docs/diagrams/quality.svg)
-
-[D2 source](docs/diagrams/quality.d2)
-
-The v1.1.0 quality contract is based on the visually validated photorealistic path:
+Richchar separates speech generation, lip synchronization, restoration, and encoding into explicit stages.
 
 ```text
-Wav2Lip GAN: --nosmooth
-GFPGAN model: GFPGANv1.4.pth
-upscale: 1
-arch: clean
-channel_multiplier: 2
-bg_upsampler: None
-has_aligned: False
-only_center_face: True
-paste_back: True
-weight: 0.65
-FFmpeg codec: libx264
-CRF: 14
-preset: slow
-pixel format: yuv420p
+Portrait + Text
+      │
+      ▼
+    Piper
+      │
+      ▼
+ Wav2Lip GAN
+      │
+      ▼
+   Raw MP4
+      │
+      ▼
+Lossless PNG
+      │
+      ▼
+ GFPGAN 1.4
+      │
+      ▼
+ FFmpeg CRF 14
+      │
+      ▼
+ Final MP4
 ```
 
-See `docs/QUALITY_BASELINE.md` before changing restoration or encoding parameters.
+---
 
-## CLI Reference
+## 2. Installation
 
-![CLI control surface](docs/diagrams/cli.svg)
+![Installation architecture](docs/architecture/installation.svg)
 
-[D2 source](docs/diagrams/cli.d2)
+### macOS
 
-Core controls include `--image`, `--text`, `--script-file`, `--voice-model`, `--output`, `--preview-seconds`, `--resume`, `--box`, `--doctor`, and `--help`. The packaged Unix manual provides the long-form reference.
+Install base tools:
 
 ```bash
-man ./man/richchar.1
+brew install git ffmpeg python@3.10 d2 groff
 ```
 
-## Doctor and Diagnostics
+Clone Richchar:
 
-![Diagnostics flow](docs/diagrams/doctor.svg)
+```bash
+git clone git@github.com:iamrichmack111/richchar-cli.git
+cd richchar-cli
+chmod +x richchar scripts/doctor.sh
+```
 
-[D2 source](docs/diagrams/doctor.d2)
+Create the development environment:
 
-Run diagnostics before debugging a render:
+```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements-dev.txt
+```
+
+Richchar also expects local installations of Piper, Wav2Lip, GFPGAN, FFmpeg, and their required model files.
+
+Run diagnostics:
 
 ```bash
 ./richchar --doctor
 ```
 
-The doctor checks the expected local toolchain and model/runtime dependencies.
+### Ubuntu
 
-## Performance
-
-![Performance model](docs/diagrams/performance.svg)
-
-[D2 source](docs/diagrams/performance.d2)
-
-GFPGAN is normally the most expensive stage because restoration runs per frame. At 25 FPS, a 20-second clip contains roughly 500 frames. Use short previews before long jobs and use `--resume` after interruptions.
-
-## CI/CD
-
-![CI/CD gates](docs/diagrams/ci-cd.svg)
-
-[D2 source](docs/diagrams/ci-cd.d2)
-
-Every push to `main` and every pull request passes through automated gates. CI checks Bash syntax, ShellCheck, Ruff, Pytest and CLI smoke behavior; Security runs Trivy; CodeQL builds and analyzes a Python database with the full CodeQL bundle.
-
-## Package and Distribution
-
-![Package layout](docs/diagrams/package.svg)
-
-[D2 source](docs/diagrams/package.d2)
-
-Build release artifacts with:
+Install base tools:
 
 ```bash
+sudo apt update
+sudo apt install -y git ffmpeg python3 python3-venv python3-pip unzip groff
+```
+
+Clone and initialize:
+
+```bash
+git clone git@github.com:iamrichmack111/richchar-cli.git
+cd richchar-cli
+chmod +x richchar scripts/doctor.sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements-dev.txt
+./richchar --doctor
+```
+
+---
+
+## 3. Quick Start
+
+![Quick start](docs/architecture/quickstart.svg)
+
+Minimal render:
+
+```bash
+./richchar \
+  --image portrait.png \
+  --text "Welcome to Richmack OS." \
+  --voice-model voice.onnx \
+  --output output.mp4
+```
+
+Using a narration file:
+
+```bash
+./richchar \
+  --image portrait.png \
+  --script-file narration.txt \
+  --voice-model voice.onnx \
+  --output final.mp4
+```
+
+Absolute-path example:
+
+```bash
+./richchar \
+  --image ~/Desktop/portrait.png \
+  --text "This is a Richchar quality test." \
+  --voice-model ~/Desktop/en_US-ryan-high.onnx \
+  --output ~/Desktop/richchar-test.mp4
+```
+
+---
+
+## 4. CLI Commands
+
+![CLI reference](docs/architecture/cli-reference.svg)
+
+Doctor:
+
+```bash
+./richchar --doctor
+```
+
+Short preview:
+
+```bash
+./richchar \
+  --image portrait.png \
+  --text "Testing Richchar." \
+  --voice-model voice.onnx \
+  --preview-seconds 5 \
+  --output preview.mp4
+```
+
+Resume:
+
+```bash
+./richchar \
+  --image portrait.png \
+  --script-file narration.txt \
+  --voice-model voice.onnx \
+  --resume \
+  --output final.mp4
+```
+
+Manual face box:
+
+```bash
+./richchar \
+  --image portrait.png \
+  --text "Testing manual face detection." \
+  --voice-model voice.onnx \
+  --box 120 980 170 980 \
+  --output manual-box.mp4
+```
+
+Help:
+
+```bash
+./richchar --help
+```
+
+---
+
+## 5. Rendering Pipeline
+
+![Rendering pipeline](docs/architecture/render-pipeline.svg)
+
+```text
+[1/5] Generating Piper audio
+[2/5] Running Wav2Lip GAN
+[3/5] Extracting lossless PNG frames
+[4/5] Running exact GFPGAN restoration
+[5/5] Encoding final MP4
+```
+
+The lossless PNG stage avoids another lossy encode before restoration.
+
+---
+
+## 6. Quality Baseline
+
+![Quality architecture](docs/architecture/quality-pipeline.svg)
+
+Validated GFPGAN settings:
+
+```text
+GFPGANv1.4.pth
+upscale=1
+arch=clean
+channel_multiplier=2
+bg_upsampler=None
+has_aligned=False
+only_center_face=True
+paste_back=True
+weight=0.65
+```
+
+Final encoding:
+
+```text
+codec:     libx264
+CRF:       14
+preset:    slow
+pixel fmt: yuv420p
+```
+
+Wav2Lip uses the GAN checkpoint with `--nosmooth`.
+
+---
+
+## 7. Components
+
+![Component map](docs/architecture/component-map.svg)
+
+Richchar is an orchestrator around dedicated local runtimes:
+
+```text
+richchar
+├── Piper
+├── Wav2Lip GAN
+├── FFmpeg / FFprobe
+├── src/restore_face.py
+│   └── GFPGAN v1.4
+├── scripts/doctor.sh
+└── final MP4
+```
+
+---
+
+## 8. Performance
+
+![Performance](docs/architecture/performance.svg)
+
+GFPGAN restoration is usually the longest stage because every generated frame is restored individually.
+
+At 25 FPS:
+
+```text
+85 frames   ≈ 3.4 seconds
+495 frames  ≈ 19.8 seconds
+1500 frames ≈ 60 seconds
+```
+
+Use short previews before long renders and resume interrupted jobs where possible.
+
+---
+
+## 9. CI/CD and Security
+
+![CI/CD](docs/architecture/ci-cd.svg)
+
+Every push is validated through independent quality and security gates:
+
+```text
+Git Push
+├── CI
+│   ├── Bash syntax
+│   ├── ShellCheck
+│   ├── Ruff
+│   ├── Pytest
+│   └── CLI smoke
+├── Security
+│   └── Trivy
+└── CodeQL
+    └── Python analysis
+```
+
+Check GitHub Actions:
+
+```bash
+gh run list -L 10
+```
+
+Local checks:
+
+```bash
+ruff check src tests
+pytest -q
+shellcheck richchar scripts/doctor.sh
+```
+
+---
+
+## 10. Troubleshooting
+
+![Troubleshooting](docs/architecture/troubleshooting.svg)
+
+Always start with:
+
+```bash
+./richchar --doctor
+```
+
+Check media tools:
+
+```bash
+ffmpeg -version
+ffprobe -version
+```
+
+Inspect an output:
+
+```bash
+ffprobe output.mp4
+```
+
+If automatic detection fails on a suitable photographic portrait, use:
+
+```text
+--box TOP BOTTOM LEFT RIGHT
+```
+
+---
+
+## 11. Supported Input
+
+![Input support](docs/architecture/input-support.svg)
+
+Best results come from photographic portraits with a clear frontal face, visible mouth, good resolution, reasonable lighting, and minimal obstruction.
+
+Cartoon and heavily illustrated faces are **not a validated Richchar v1.1.0 quality target**.
+
+---
+
+## 12. Packaging
+
+![Packaging](docs/architecture/packaging.svg)
+
+Build distribution artifacts:
+
+```bash
+chmod +x packaging/build-package.sh
 ./packaging/build-package.sh
 ```
 
-The package builder emits versioned ZIP and tar.gz archives plus SHA-256 checksums under `dist/`. Installer and uninstaller scripts are included for the CLI and man page.
-
-## Supported Target and Limitations
-
-![Supported target](docs/diagrams/limitations.svg)
-
-[D2 source](docs/diagrams/limitations.d2)
-
-The validated target is a photographic human portrait with a visible frontal face and clear mouth. Cartoon and heavily illustrated faces remain experimental/unsupported because face detection and restoration quality are inconsistent on non-photographic input.
-
-## Security
-
-![Security model](docs/diagrams/security.svg)
-
-[D2 source](docs/diagrams/security.d2)
-
-Do not commit secrets, generated frame directories, private voice assets, local virtual environments, model checkpoints or large rendered videos unless intentionally distributing them. External tools and models retain their own licenses and usage restrictions.
-
-## Development
-
-![Development loop](docs/diagrams/development.svg)
-
-[D2 source](docs/diagrams/development.d2)
+Inspect them:
 
 ```bash
-python3 -m venv .ci-venv
+ls -lh dist/
+```
+
+Expected outputs:
+
+```text
+richchar-cli-1.1.0.zip
+richchar-cli-1.1.0.tar.gz
+SHA256SUMS
+```
+
+---
+
+## 13. Man Page
+
+![Man page](docs/architecture/man-page.svg)
+
+View directly:
+
+```bash
+groff -man -Tascii man/richchar.1 | less
+```
+
+After installation:
+
+```bash
+man richchar
+```
+
+---
+
+## 14. Wiki Documentation
+
+![Wiki architecture](docs/architecture/wiki.svg)
+
+The long-form documentation is mirrored under `docs/wiki/`.
+
+If the GitHub Wiki feature is unavailable for the repository, these pages remain version-controlled and can later be published to GitHub Pages or the Wiki when available.
+
+---
+
+## 15. Development
+
+![Development](docs/architecture/development.svg)
+
+Create a QA environment:
+
+```bash
+python3.10 -m venv .ci-venv
 source .ci-venv/bin/activate
 pip install -r requirements-dev.txt
+```
+
+Run QA:
+
+```bash
 ruff check src tests
 pytest -q
 shellcheck richchar scripts/doctor.sh packaging/*.sh
 ```
 
-Changes to the quality baseline should be treated as visual-regression-sensitive changes.
+---
 
-## Release Process
+## 16. Repository Layout
 
-![Release flow](docs/diagrams/release.svg)
-
-[D2 source](docs/diagrams/release.d2)
-
-A release is cut only after CI, Security and CodeQL are green. Build artifacts, update the changelog, tag the version, push the tag, then verify the GitHub Release artifacts.
-
-## Repository Layout
-
-![Repository layout](docs/diagrams/layout.svg)
-
-[D2 source](docs/diagrams/layout.d2)
+![Repository layout](docs/architecture/repository-layout.svg)
 
 ```text
 richchar-cli/
 ├── richchar
-├── src/restore_face.py
-├── scripts/doctor.sh
-├── tests/
-├── docs/
-│   ├── diagrams/          # D2 source + rendered SVG for every README section
-│   ├── wiki/              # GitHub Wiki mirror
-│   └── QUALITY_BASELINE.md
-├── man/richchar.1
-├── packaging/
-├── .github/workflows/
 ├── README.md
 ├── CHANGELOG.md
-└── LICENSE
+├── LICENSE
+├── pyproject.toml
+├── requirements-dev.txt
+├── src/
+├── scripts/
+├── tests/
+├── docs/
+│   ├── architecture/
+│   └── wiki/
+├── man/
+├── packaging/
+└── .github/
 ```
 
-The wiki mirror contains deeper architecture, installation, troubleshooting, security, CI/CD and release documentation.
+---
+
+## 17. Licensing
+
+![Licensing map](docs/architecture/licensing.svg)
+
+Richchar integrates external software and models. Those projects retain their own licensing requirements.
+
+Before commercial redistribution, verify the licenses that apply to Piper, Piper voice models, Wav2Lip, Wav2Lip checkpoints, GFPGAN, GFPGAN checkpoints, and FFmpeg.
+
+---
+
+**Richchar CLI v1.1.0**

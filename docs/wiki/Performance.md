@@ -1,5 +1,5 @@
 # Performance
 
-![Performance](../diagrams/performance.svg)
+GFPGAN is normally the most expensive stage because every frame is restored independently.
 
-Runtime scales mainly with generated frame count because GFPGAN restores every frame. Short previews are the fastest quality check. Resume mode avoids repeating completed expensive work after an interrupted job.
+At 25 FPS, 60 seconds of output contains about 1,500 frames. Use short previews and resume support for long renders.

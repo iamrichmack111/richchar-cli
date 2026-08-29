@@ -1,0 +1,12 @@
+direction: right
+push: Git Push
+ci: CI { shell: ShellCheck; ruff: Ruff; tests: Pytest; smoke: CLI Smoke }
+security: Security { trivy: Trivy }
+codeql: CodeQL
+release: Release
+push -> ci
+push -> security
+push -> codeql
+ci -> release
+security -> release
+codeql -> release

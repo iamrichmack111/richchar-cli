@@ -1,0 +1,8 @@
+direction: down
+cli: richchar
+inputs: Inputs { image: --image; text: --text; script: --script-file; voice: --voice-model }
+controls: Controls { preview: --preview-seconds; resume: --resume; box: --box; doctor: --doctor }
+output: --output
+inputs -> cli
+controls -> cli
+cli -> output

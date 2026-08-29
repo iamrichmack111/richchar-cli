@@ -1,5 +1,7 @@
 # CLI Reference
 
-![CLI](../diagrams/cli.svg)
+```bash
+./richchar   --image portrait.png   --text "Welcome to Richmack OS."   --voice-model voice.onnx   --output output.mp4
+```
 
-Use `./richchar --help` for the live interface and `man ./man/richchar.1` for the packaged manual. Common controls are `--image`, `--text`, `--script-file`, `--voice-model`, `--output`, `--preview-seconds`, `--resume`, `--box`, and `--doctor`.
+Useful controls include `--preview-seconds`, `--resume`, `--box`, `--doctor`, and `--help`.

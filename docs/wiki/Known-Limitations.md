@@ -1,5 +1,7 @@
 # Known Limitations
 
-![Limitations](../diagrams/limitations.svg)
+Richchar v1.1.0 is validated for photographic human portraits.
 
-The quality target is photorealistic human portraits. Cartoon and heavily illustrated faces are not validated. Full-frame GFPGAN restoration is computationally expensive, and compatibility depends on independently versioned upstream tools/models.
+Cartoon and heavily illustrated faces are not a validated quality target.
+
+External projects and model files retain their own licenses.

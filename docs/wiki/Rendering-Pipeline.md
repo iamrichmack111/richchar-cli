@@ -1,10 +1,9 @@
 # Rendering Pipeline
 
-![Quality pipeline](../diagrams/quality.svg)
+Richchar runs five main stages:
 
-1. Validate portrait, narration, voice model and runtime paths.
-2. Synthesize WAV audio with Piper.
-3. Run Wav2Lip GAN with `--nosmooth`.
-4. Extract every frame to PNG.
-5. Restore complete frames with GFPGAN v1.4.
-6. Reassemble with the source frame rate, H.264 CRF 14 and slow preset.
+1. Piper audio generation.
+2. Wav2Lip GAN lip synchronization.
+3. Lossless PNG frame extraction.
+4. GFPGAN v1.4 full-frame restoration.
+5. FFmpeg H.264 encoding.

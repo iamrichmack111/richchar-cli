@@ -1,0 +1,12 @@
+direction: right
+input: Inputs { portrait: Portrait; script: Script; voice: Voice Model }
+piper: Piper TTS
+wav2lip: Wav2Lip GAN
+frames: Lossless PNG Frames
+gfpgan: GFPGAN v1.4
+encode: FFmpeg CRF 14
+final: Final MP4
+input.script -> piper
+input.voice -> piper
+input.portrait -> wav2lip
+piper -> wav2lip -> frames -> gfpgan -> encode -> final

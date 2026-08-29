@@ -1,7 +1,27 @@
 # Architecture
 
-![Runtime architecture](../diagrams/architecture.svg)
+The pipeline is intentionally staged:
 
-Richchar is a staged orchestrator. Piper creates speech, Wav2Lip GAN produces synchronized facial motion, FFmpeg extracts full lossless frames, GFPGAN v1.4 restores the generated face, and FFmpeg performs the final high-quality encode.
+```text
+Portrait + Script
+      |
+      v
+   Piper TTS
+      |
+      v
+ Wav2Lip GAN
+      |
+      v
+ Lossless PNG
+      |
+      v
+ GFPGAN v1.4
+      |
+      v
+ FFmpeg CRF 14
+      |
+      v
+ Final MP4
+```
 
-The staged design makes failures observable and keeps the exact validated restoration recipe reproducible.
+See the repository `docs/architecture/` directory for editable D2 sources.

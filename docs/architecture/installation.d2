@@ -1,0 +1,8 @@
+direction: right
+os: Operating System { mac: macOS; linux: Ubuntu }
+deps: Base Tools { python: Python; ffmpeg: FFmpeg; git: Git }
+ai: AI Runtime { piper: Piper; w2l: Wav2Lip; gfpgan: GFPGAN }
+cli: Richchar CLI
+doctor: richchar --doctor
+ready: Ready
+os -> deps -> ai -> cli -> doctor -> ready

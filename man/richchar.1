@@ -9,15 +9,14 @@ richchar \- local-first talking portrait generator
 --output FILE
 .RI [ options ]
 .SH DESCRIPTION
-Richchar orchestrates Piper text-to-speech, Wav2Lip GAN lip synchronization,
-GFPGAN v1.4 face restoration, and FFmpeg encoding.
+Richchar orchestrates Piper, Wav2Lip GAN, GFPGAN, and FFmpeg to create talking portrait videos.
 .SH OPTIONS
 .TP
 .B --image FILE
-Source photographic portrait.
+Source portrait.
 .TP
 .B --text TEXT
-Inline narration.
+Narration text.
 .TP
 .B --script-file FILE
 Read narration from a text file.
@@ -29,42 +28,24 @@ Piper ONNX voice model.
 Destination MP4.
 .TP
 .B --preview-seconds N
-Limit processing to a short preview where supported.
+Create a short preview.
 .TP
 .B --resume
-Reuse completed intermediate work where supported.
+Resume supported intermediate work.
 .TP
 .B --box TOP BOTTOM LEFT RIGHT
-Supply a manual face region to Wav2Lip.
+Supply a manual face box.
 .TP
 .B --doctor
-Check local dependencies and configured model/runtime paths.
+Check dependencies and configured paths.
 .TP
 .B --help
-Display command help.
-.SH PIPELINE
-Piper creates WAV audio. Wav2Lip GAN creates synchronized facial motion.
-FFmpeg extracts lossless PNG frames. GFPGAN restores complete frames.
-FFmpeg encodes H.264 output using the quality baseline.
-.SH QUALITY BASELINE
-Wav2Lip GAN uses --nosmooth. GFPGAN v1.4 uses upscale 1, clean architecture,
-channel multiplier 2, center-face restoration, paste-back enabled and weight 0.65.
-Final encoding uses libx264, CRF 14, preset slow and yuv420p.
-.SH EXAMPLES
-.nf
-richchar --image portrait.png \\
-  --text "Welcome to Richmack OS." \\
-  --voice-model voice.onnx \\
-  --output final.mp4
-.fi
-.SH DIAGNOSTICS
-Run `richchar --doctor` before troubleshooting a render.
+Display help.
+.SH QUALITY
+The validated GFPGAN baseline uses GFPGANv1.4, upscale 1, clean architecture, center-face restoration, paste-back enabled, and weight 0.65.
+Final video uses libx264, CRF 14, and preset slow.
 .SH LIMITATIONS
-Version 1.1.0 targets photographic human portraits. Cartoon and heavily
-illustrated faces are not a validated quality target.
-.SH EXIT STATUS
-Zero indicates success. Non-zero indicates a validation, dependency,
-rendering, restoration, encoding or filesystem failure.
+Version 1.1.0 targets photographic human portraits. Cartoon and heavily illustrated faces are not validated quality targets.
 .SH SEE ALSO
 .BR ffmpeg (1),
 .BR python3 (1)

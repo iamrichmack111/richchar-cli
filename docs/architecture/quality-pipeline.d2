@@ -1,0 +1,8 @@
+direction: right
+source: Source Portrait
+w2l: Wav2Lip GAN
+frames: Generated Frames
+restore: GFPGAN 1.4
+encode: H.264 CRF 14
+final: Final MP4
+source -> w2l -> frames -> restore -> encode -> final
