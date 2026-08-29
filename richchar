@@ -152,7 +152,7 @@ SOURCE_MP4="$RAW_MP4"
 RESTORED_MP4="$WORK/restored.mp4"
 
 log "[1/5] Generating Piper audio"
-cat "$SCRIPT_TXT" | "$PIPER_PYTHON" -m piper --model "$VOICE_MODEL" --output_file "$VOICE_WAV"
+"$PIPER_PYTHON" -m piper --model "$VOICE_MODEL" --output_file "$VOICE_WAV" < "$SCRIPT_TXT"
 
 log "[2/5] Running Wav2Lip GAN"
 W2L_ARGS=(
