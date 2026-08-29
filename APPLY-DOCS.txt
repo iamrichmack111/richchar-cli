@@ -1,0 +1,17 @@
+Copy these files into the ROOT of your existing richchar-cli repository.
+
+Recommended:
+  unzip richchar-docs-v1.1.0.zip -d /tmp/richchar-docs
+  cd ~/Downloads/richchar-cli-v1.1.0-docs
+  cp -R /tmp/richchar-docs/richchar-docs-v1.1.0/. .
+  chmod +x packaging/build-package.sh
+  git add README.md docs man packaging
+  git commit -m "docs: add complete README D2 wiki man page and packaging"
+  git push origin main
+
+Then render D2 SVGs locally:
+  command -v d2 >/dev/null || brew install d2
+  for f in docs/architecture/*.d2; do d2 "$f" "${f%.d2}.svg"; done
+  git add docs/architecture
+  git commit -m "docs: render D2 architecture diagrams"
+  git push origin main
