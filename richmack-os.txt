@@ -1,0 +1,9 @@
+Welcome to Richmack OS.
+
+A local-first system built to turn ideas into working software, media, automation, and tools.
+
+From code to deployment, from AI to infrastructure, Richmack OS is designed to build, test, harden, and ship.
+
+This is more than a collection of apps. It is a connected operating system for creating.
+
+Welcome to Richmack OS.

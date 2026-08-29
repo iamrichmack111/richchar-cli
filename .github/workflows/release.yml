@@ -1,0 +1,22 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate
+        run: bash -n richchar scripts/doctor.sh
+      - name: Build release zip
+        run: |
+          mkdir -p dist
+          zip -r "dist/richchar-cli-${GITHUB_REF_NAME}.zip" . \
+            -x '.git/*' 'dist/*' '*.mp4' '*.wav' '*.png' '*.jpg' '*.onnx' '*.pth'
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
