@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="240" viewBox="0 0 1100 240">
+<rect width="100%" height="100%" fill="#0d1117"/>
+<text x="35" y="36" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#f0f6fc">Development Loop</text>
+<defs><marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#58a6ff"/></marker></defs>
+<line x1="215.0" y1="116.0" x2="247.5" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="427.5" y1="116.0" x2="460.0" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="640.0" y1="116.0" x2="672.5" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="852.5" y1="116.0" x2="885.0" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="35.0" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="125.0" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Edit</text>
+<text x="125.0" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">Code / docs</text>
+<rect x="247.5" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="337.5" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Lint</text>
+<text x="337.5" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">Ruff + ShellCheck</text>
+<rect x="460.0" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="550.0" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Test</text>
+<text x="550.0" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">Pytest + smoke</text>
+<rect x="672.5" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="762.5" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Push</text>
+<text x="762.5" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">GitHub</text>
+<rect x="885.0" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="975.0" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Gate</text>
+<text x="975.0" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">CI / Security / CodeQL</text>
+</svg>

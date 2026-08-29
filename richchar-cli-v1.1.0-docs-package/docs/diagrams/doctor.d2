@@ -1,0 +1,14 @@
+direction: right
+
+n0: "Doctor\nrichchar --doctor"
+n1: "Runtime\nPython / venvs"
+n2: "Models\nPiper / Wav2Lip / GFPGAN"
+n3: "Media\nFFmpeg / ffprobe"
+n4: "Status\nReady / missing dependency"
+
+n0 -> n1
+n0 -> n2
+n0 -> n3
+n1 -> n4
+n2 -> n4
+n3 -> n4

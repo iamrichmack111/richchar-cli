@@ -1,0 +1,12 @@
+direction: right
+
+n0: "Wav2Lip\nGAN + --nosmooth"
+n1: "PNG Frames\nLossless intermediate"
+n2: "GFPGAN\nweight 0.65"
+n3: "FFmpeg\nCRF 14 / slow"
+n4: "Baseline\nValidated photo quality"
+
+n0 -> n1
+n1 -> n2
+n2 -> n3
+n3 -> n4

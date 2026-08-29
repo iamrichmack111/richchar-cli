@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+VERSION="1.1.0"
+IMAGE=""
+SCRIPT_FILE=""
+TEXT=""
+VOICE_MODEL=""
+OUTPUT=""
+KEEP_WORK=0
+RESUME=0
+PREVIEW_SECONDS=""
+GFPGAN_WEIGHT="0.65"
+WAV2LIP_BOX=""
+
+usage() {
+  cat <<'EOF'
+Richchar CLI v1.1.0 — Richmack OS talking portrait renderer
+
+Usage:
+  richchar --image IMAGE --script-file SCRIPT.txt [options] --output final.mp4
+  richchar --image IMAGE --text "Words to speak" [options] --output final.mp4
+
+Required:
+  --image PATH             Photorealistic portrait image
+  --script-file PATH       UTF-8 script file (or use --text)
+  --text TEXT              Inline speech text (or use --script-file)
+  --output PATH            Final MP4
+
+Options:
+  --voice-model PATH       Piper .onnx voice model; auto-finds en_US-ryan-high.onnx
+  --gfpgan-weight N        GFPGAN restoration weight (default: 0.65)
+  --preview-seconds N      Render only first N seconds (fast QA)
+  --box "T B L R"         Manual Wav2Lip face box; mainly for detector failures
+  --resume                 Reuse completed restored PNG frames in the work directory
+  --keep-work              Preserve work directory and print its location
+  --doctor                 Validate external dependencies and exit
+  --version                Print version and exit
+  -h, --help               Show this help
+
+Environment:
+  WAV2LIP_DIR              Default: ~/Desktop/Wav2Lip
+  SADTALKER_DIR            Default: ~/Desktop/SadTalker
+  PIPER_PYTHON             Default: python3.12
+  RICHCHAR_WORKDIR         Fixed work directory; useful with --resume
+EOF
+}
+
+log() { printf '%s\n' "$*"; }
+die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+
+WAV2LIP_DIR="${WAV2LIP_DIR:-$HOME/Desktop/Wav2Lip}"
+SADTALKER_DIR="${SADTALKER_DIR:-$HOME/Desktop/SadTalker}"
+PIPER_PYTHON="${PIPER_PYTHON:-python3.12}"
+WAV2LIP_PY="$WAV2LIP_DIR/.venv/bin/python"
+WAV2LIP_CKPT="$WAV2LIP_DIR/checkpoints/wav2lip_gan.pth"
+SADTALKER_PY="$SADTALKER_DIR/.venv/bin/python"
+GFPGAN_MODEL="$SADTALKER_DIR/gfpgan/weights/GFPGANv1.4.pth"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+RESTORE_SCRIPT="$SCRIPT_DIR/src/restore_face.py"
+
+doctor() {
+  local failed=0
+  check_cmd() { if command -v "$1" >/dev/null 2>&1; then printf '✓ %-24s %s\n' "$1" "$(command -v "$1")"; else printf '✗ %-24s missing\n' "$1"; failed=1; fi; }
+  check_file() { if [[ -e "$2" ]]; then printf '✓ %-24s %s\n' "$1" "$2"; else printf '✗ %-24s %s\n' "$1" "$2"; failed=1; fi; }
+  check_cmd ffmpeg
+  check_cmd ffprobe
+  check_cmd "$PIPER_PYTHON"
+  check_file "Wav2Lip Python" "$WAV2LIP_PY"
+  check_file "Wav2Lip GAN checkpoint" "$WAV2LIP_CKPT"
+  check_file "SadTalker Python" "$SADTALKER_PY"
+  check_file "GFPGAN v1.4 model" "$GFPGAN_MODEL"
+  check_file "restore_face.py" "$RESTORE_SCRIPT"
+  return "$failed"
+}
+
+if [[ ${1:-} == "--doctor" ]]; then doctor; exit $?; fi
+if [[ ${1:-} == "--version" ]]; then echo "$VERSION"; exit 0; fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --image) IMAGE="$2"; shift 2 ;;
+    --script-file) SCRIPT_FILE="$2"; shift 2 ;;
+    --text) TEXT="$2"; shift 2 ;;
+    --voice-model) VOICE_MODEL="$2"; shift 2 ;;
+    --output) OUTPUT="$2"; shift 2 ;;
+    --gfpgan-weight) GFPGAN_WEIGHT="$2"; shift 2 ;;
+    --preview-seconds) PREVIEW_SECONDS="$2"; shift 2 ;;
+    --box) WAV2LIP_BOX="$2"; shift 2 ;;
+    --resume) RESUME=1; shift ;;
+    --keep-work) KEEP_WORK=1; shift ;;
+    --doctor) doctor; exit $? ;;
+    --version) echo "$VERSION"; exit 0 ;;
+    -h|--help) usage; exit 0 ;;
+    *) die "Unknown option: $1" ;;
+  esac
+done
+
+[[ -n "$IMAGE" ]] || die "--image is required"
+[[ -f "$IMAGE" ]] || die "image not found: $IMAGE"
+[[ -n "$OUTPUT" ]] || die "--output is required"
+if [[ -z "$SCRIPT_FILE" && -z "$TEXT" ]]; then die "provide --script-file or --text"; fi
+if [[ -n "$SCRIPT_FILE" && -n "$TEXT" ]]; then die "use either --script-file or --text, not both"; fi
+if [[ -n "$SCRIPT_FILE" && ! -f "$SCRIPT_FILE" ]]; then die "script file not found: $SCRIPT_FILE"; fi
+
+python3 - "$GFPGAN_WEIGHT" <<'PY' || exit 2
+import sys
+v=float(sys.argv[1])
+assert 0 <= v <= 1, "weight must be between 0 and 1"
+PY
+
+# Do not start expensive work until preflight passes.
+doctor || die "dependency preflight failed"
+
+if [[ -z "$VOICE_MODEL" ]]; then
+  log "[preflight] Searching for en_US-ryan-high.onnx ..."
+  for candidate in \
+    "$HOME/Desktop/en_US-ryan-high.onnx" \
+    "$HOME/Downloads/en_US-ryan-high.onnx"; do
+    if [[ -f "$candidate" ]]; then VOICE_MODEL="$candidate"; break; fi
+  done
+  if [[ -z "$VOICE_MODEL" ]]; then
+    VOICE_MODEL="$(find "$HOME/Desktop" "$HOME/Downloads" -maxdepth 4 -type f -name 'en_US-ryan-high.onnx' -print -quit 2>/dev/null || true)"
+  fi
+fi
+[[ -n "$VOICE_MODEL" && -f "$VOICE_MODEL" ]] || die "Piper voice model not found; use --voice-model PATH"
+
+if [[ -n "${RICHCHAR_WORKDIR:-}" ]]; then
+  WORK="$RICHCHAR_WORKDIR"
+  mkdir -p "$WORK"
+else
+  WORK="$(mktemp -d "${TMPDIR:-/tmp}/richchar.XXXXXX")"
+fi
+FRAMES="$WORK/gfpgan-frames"
+RESTORED="$WORK/gfpgan-restored"
+mkdir -p "$FRAMES" "$RESTORED"
+
+cleanup() {
+  if [[ "$KEEP_WORK" -eq 1 || -n "${RICHCHAR_WORKDIR:-}" ]]; then
+    log "[workdir] $WORK"
+  else
+    rm -rf "$WORK"
+  fi
+}
+trap cleanup EXIT
+
+SCRIPT_TXT="$WORK/script.txt"
+if [[ -n "$SCRIPT_FILE" ]]; then cp "$SCRIPT_FILE" "$SCRIPT_TXT"; else printf '%s\n' "$TEXT" > "$SCRIPT_TXT"; fi
+VOICE_WAV="$WORK/voice.wav"
+RAW_MP4="$WORK/raw-wav2lip.mp4"
+SOURCE_MP4="$RAW_MP4"
+RESTORED_MP4="$WORK/restored.mp4"
+
+log "[1/5] Generating Piper audio"
+cat "$SCRIPT_TXT" | "$PIPER_PYTHON" -m piper --model "$VOICE_MODEL" --output_file "$VOICE_WAV"
+
+log "[2/5] Running Wav2Lip GAN"
+W2L_ARGS=(
+  inference.py
+  --checkpoint_path "$WAV2LIP_CKPT"
+  --face "$IMAGE"
+  --audio "$VOICE_WAV"
+  --outfile "$RAW_MP4"
+  --nosmooth
+)
+if [[ -n "$WAV2LIP_BOX" ]]; then
+  # shellcheck disable=SC2206
+  BOX_PARTS=( $WAV2LIP_BOX )
+  [[ ${#BOX_PARTS[@]} -eq 4 ]] || die "--box needs four integers: TOP BOTTOM LEFT RIGHT"
+  W2L_ARGS+=(--box "${BOX_PARTS[@]}")
+fi
+(
+  cd "$WAV2LIP_DIR"
+  "$WAV2LIP_PY" "${W2L_ARGS[@]}"
+)
+
+if [[ -n "$PREVIEW_SECONDS" ]]; then
+  PREVIEW_MP4="$WORK/raw-preview.mp4"
+  log "[preview] limiting restoration to first ${PREVIEW_SECONDS}s"
+  ffmpeg -y -loglevel error -i "$RAW_MP4" -t "$PREVIEW_SECONDS" -c copy "$PREVIEW_MP4"
+  SOURCE_MP4="$PREVIEW_MP4"
+fi
+
+log "[3/5] Extracting lossless PNG frames"
+rm -f "$FRAMES"/frame-*.png
+ffmpeg -y -loglevel error -i "$SOURCE_MP4" "$FRAMES/frame-%06d.png"
+
+TOTAL="$(find "$FRAMES" -maxdepth 1 -type f -name 'frame-*.png' | wc -l | tr -d ' ')"
+[[ "$TOTAL" -gt 0 ]] || die "no frames extracted"
+
+log "[4/5] Exact GFPGAN restoration ($TOTAL frames)"
+RESTORE_ARGS=(
+  "$RESTORE_SCRIPT"
+  --src "$FRAMES"
+  --dst "$RESTORED"
+  --model "$GFPGAN_MODEL"
+  --weight "$GFPGAN_WEIGHT"
+)
+[[ "$RESUME" -eq 1 ]] && RESTORE_ARGS+=(--resume)
+"$SADTALKER_PY" "${RESTORE_ARGS[@]}"
+
+RESTORED_COUNT="$(find "$RESTORED" -maxdepth 1 -type f -name 'frame-*.png' | wc -l | tr -d ' ')"
+[[ "$RESTORED_COUNT" -eq "$TOTAL" ]] || die "restoration incomplete: $RESTORED_COUNT/$TOTAL"
+
+FPS="$(ffprobe -v 0 -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$SOURCE_MP4")"
+
+log "[5/5] Encoding final MP4 (CRF 14 / slow)"
+mkdir -p "$(dirname "$OUTPUT")"
+ffmpeg -y -loglevel error \
+  -framerate "$FPS" \
+  -i "$RESTORED/frame-%06d.png" \
+  -i "$SOURCE_MP4" \
+  -map 0:v:0 -map 1:a? \
+  -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p \
+  -c:a aac -b:a 192k -shortest \
+  "$RESTORED_MP4"
+cp "$RESTORED_MP4" "$OUTPUT"
+
+log ""
+log "DONE"
+log "Output: $OUTPUT"

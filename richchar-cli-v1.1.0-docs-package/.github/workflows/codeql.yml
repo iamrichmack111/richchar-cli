@@ -1,0 +1,36 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 5 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download CodeQL bundle
+        run: |
+          gh release download --repo github/codeql-action --pattern 'codeql-bundle-linux64.tar.gz' --dir /tmp/codeql
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Install CodeQL bundle
+        run: |
+          mkdir -p /opt/codeql-bundle
+          tar -xzf /tmp/codeql/codeql-bundle-linux64.tar.gz -C /opt/codeql-bundle
+          echo "/opt/codeql-bundle/codeql" >> "$GITHUB_PATH"
+      - name: Verify CodeQL packs
+        run: |
+          codeql version
+          codeql resolve languages
+          codeql resolve packs
+      - name: Create CodeQL database
+        run: codeql database create codeql-db --language=python --source-root=.
+      - name: Analyze
+        run: codeql database analyze codeql-db codeql/python-queries --format=sarif-latest --output=codeql-results.sarif

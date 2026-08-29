@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="240" viewBox="0 0 1100 240">
+<rect width="100%" height="100%" fill="#0d1117"/>
+<text x="35" y="36" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#f0f6fc">Feature Map</text>
+<defs><marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#58a6ff"/></marker></defs>
+<line x1="215.0" y1="116.0" x2="318.3333333333333" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="498.3333333333333" y1="116.0" x2="601.6666666666666" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="781.6666666666666" y1="116.0" x2="885.0" y2="116.0" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="35.0" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="125.0" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">CLI</text>
+<text x="125.0" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">Text / script /</text>
+<text x="125.0" y="143" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">preview / resume</text>
+<rect x="318.3333333333333" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="408.3333333333333" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Media</text>
+<text x="408.3333333333333" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">Piper + Wav2Lip +</text>
+<text x="408.3333333333333" y="143" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">GFPGAN + FFmpeg</text>
+<rect x="601.6666666666666" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="691.6666666666666" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">Quality</text>
+<text x="691.6666666666666" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">Photorealistic</text>
+<text x="691.6666666666666" y="143" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">baseline</text>
+<rect x="885.0" y="70" rx="12" ry="12" width="180" height="92" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+<text x="975.0" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#f0f6fc">QA</text>
+<text x="975.0" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8b949e">CI + Security + CodeQL</text>
+</svg>

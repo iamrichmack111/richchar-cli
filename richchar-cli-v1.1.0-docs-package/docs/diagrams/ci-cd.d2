@@ -1,0 +1,14 @@
+direction: right
+
+n0: "Push\nmain / PR"
+n1: "CI\nShellCheck + Ruff + Pytest"
+n2: "Security\nTrivy"
+n3: "CodeQL\nPython queries"
+n4: "Release\nTag + package"
+
+n0 -> n1
+n0 -> n2
+n0 -> n3
+n1 -> n4
+n2 -> n4
+n3 -> n4

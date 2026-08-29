@@ -1,0 +1,12 @@
+direction: right
+
+n0: "Edit\nCode / docs"
+n1: "Lint\nRuff + ShellCheck"
+n2: "Test\nPytest + smoke"
+n3: "Push\nGitHub"
+n4: "Gate\nCI / Security / CodeQL"
+
+n0 -> n1
+n1 -> n2
+n2 -> n3
+n3 -> n4

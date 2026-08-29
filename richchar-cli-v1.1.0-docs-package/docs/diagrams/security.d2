@@ -1,0 +1,12 @@
+direction: right
+
+n0: "Repository\nSource only"
+n1: "CI\nStatic checks"
+n2: "Trivy\nFilesystem scan"
+n3: "CodeQL\nPython analysis"
+n4: "Secrets\nNever commit models/credentials"
+
+n0 -> n1
+n0 -> n2
+n0 -> n3
+n4 -> n0
