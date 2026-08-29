@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Exact GFPGAN restoration recipe validated for Richchar photo portraits."""
 from __future__ import annotations
+
 import argparse
 import glob
 import os
 import time
+
 import cv2
 from gfpgan import GFPGANer
 
@@ -40,7 +42,7 @@ def main():
 
     started = time.monotonic()
     completed = 0
-    for i, path in enumerate(files, 1):
+    for _i, path in enumerate(files, 1):
         out = os.path.join(os.path.expanduser(args.dst), os.path.basename(path))
         if args.resume and os.path.isfile(out) and os.path.getsize(out) > 0:
             completed += 1
